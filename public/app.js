@@ -1,107 +1,147 @@
 const socket = io();
 const peers = {};
 let localStream;
-let currentShareStream = null;
+let shareStream = null;
 
 const videoGrid = document.getElementById("video-grid");
+const chatBox = document.getElementById("chat-box");
+const messages = document.getElementById("messages");
 
-async function start() {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    addVideo("Bạn", localStream);
+const USER_ID = Math.random().toString(36).substring(2, 9);
+const NAME = "User_" + USER_ID;
+const ROOM_ID = "room1";
 
-    const ROOM_ID = "room1";
-    const USER_ID = Math.random().toString(36).substring(2, 10);
-
-    socket.emit("join-room", ROOM_ID, USER_ID);
-
-    socket.on("user-joined", (userId) => {
-        callUser(userId);
+async function startVideo() {
+    localStream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true
     });
 
-    socket.on("signal", async (data) => {
-        if (!peers[data.from]) await callUser(data.from);
-        peers[data.from].signal(data.signal);
-    });
-
-    socket.on("user-left", (userId) => {
-        if (peers[userId]) {
-            peers[userId].destroy();
-            delete peers[userId];
-        }
-        removeVideo(userId);
-    });
-
-    // Khi có người bắt đầu chia sẻ
-    socket.on("start-share", async (userId) => {
-        console.log("User share:", userId);
-    });
-
-    // Khi người trình bày dừng chia sẻ
-    socket.on("stop-share", async (userId) => {
-        console.log("User stop sharing:", userId);
-    });
+    addVideo(USER_ID, NAME, localStream);
+    
+    socket.emit("join-room", ROOM_ID, USER_ID, NAME);
 }
 
-start();
+startVideo();
 
+// ------- Khi một user mới vào ------
+socket.on("user-joined", ({ userId, name }) => {
+    callUser(userId);
+});
+
+// -------- Nhận tín hiệu WebRTC ------
+socket.on("signal", async (data) => {
+    if (!peers[data.from]) callUser(data.from);
+    peers[data.from].signal(data.signal);
+});
+
+// -------- Khi ai đó rời phòng ------
+socket.on("user-left", (userId) => {
+    removeVideo(userId);
+    if (peers[userId]) peers[userId].destroy();
+    delete peers[userId];
+});
+
+// ================= VIDEO GRID UI ===================
+function addVideo(id, name, stream) {
+    removeVideo(id);
+    const box = document.createElement("div");
+    box.className = "video-container";
+    box.id = "box-" + id;
+
+    const video = document.createElement("video");
+    video.srcObject = stream;
+    video.autoplay = true;
+    video.playsInline = true;
+
+    const tag = document.createElement("div");
+    tag.className = "name-tag";
+    tag.innerText = name;
+
+    box.appendChild(video);
+    box.appendChild(tag);
+    videoGrid.appendChild(box);
+}
+
+function removeVideo(id) {
+    const el = document.getElementById("box-" + id);
+    if (el) el.remove();
+}
+
+// ================== SimplePeer ==================
 function callUser(userId) {
     const peer = new SimplePeer({
         initiator: true,
         trickle: false,
-        stream: currentShareStream || localStream
+        stream: shareStream || localStream
     });
 
-    peer.on("signal", (signal) => {
-        socket.emit("signal", { to: userId, from: socket.id, signal });
+    peer.on("signal", signal => {
+        socket.emit("signal", { to: userId, from: USER_ID, signal });
     });
 
-    peer.on("stream", (stream) => {
-        addVideo(userId, stream);
+    peer.on("stream", stream => {
+        addVideo(userId, "User_" + userId, stream);
     });
 
     peers[userId] = peer;
 }
 
-function addVideo(id, stream) {
-    removeVideo(id);
-    const video = document.createElement("video");
-    video.srcObject = stream;
-    video.autoplay = true;
-    video.playsInline = true;
-    video.id = "video-" + id;
-    videoGrid.appendChild(video);
-}
+// ============= MIC / CAMERA / SHARE ====================
+document.getElementById("btnMic").onclick = () => {
+    let track = localStream.getAudioTracks()[0];
+    track.enabled = !track.enabled;
+    socket.emit("toggle-mic", track.enabled);
+};
 
-function removeVideo(id) {
-    const vid = document.getElementById("video-" + id);
-    if (vid) vid.remove();
-}
+document.getElementById("btnCam").onclick = () => {
+    let track = localStream.getVideoTracks()[0];
+    track.enabled = !track.enabled;
+    socket.emit("toggle-cam", track.enabled);
+};
 
-// ======== TRÌNH BÀY (Screen Share) ==========
+document.getElementById("btnShare").onclick = async () => {
+    shareStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
 
-async function startShare() {
-    currentShareStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-    
     for (let id in peers) {
         let sender = peers[id]._pc.getSenders().find(s => s.track.kind === "video");
-        sender.replaceTrack(currentShareStream.getVideoTracks()[0]);
+        sender.replaceTrack(shareStream.getVideoTracks()[0]);
     }
 
-    addVideo("Bạn (Share)", currentShareStream);
-    socket.emit("start-share", socket.id);
+    socket.emit("start-share");
 
-    currentShareStream.getVideoTracks()[0].onended = stopShare;
-}
+    shareStream.getVideoTracks()[0].onended = stopShare;
+};
 
 function stopShare() {
     for (let id in peers) {
         let sender = peers[id]._pc.getSenders().find(s => s.track.kind === "video");
         sender.replaceTrack(localStream.getVideoTracks()[0]);
     }
-
-    removeVideo("Bạn (Share)");
-    currentShareStream = null;
-    socket.emit("stop-share", socket.id);
+    shareStream = null;
+    socket.emit("stop-share");
 }
 
-document.getElementById("btnShare").onclick = startShare;
+// ================ CHAT ================
+document.getElementById("btnChat").onclick = () => {
+    chatBox.classList.toggle("hidden");
+};
+
+document.getElementById("chatInput").onkeydown = (e) => {
+    if (e.key === "Enter") {
+        let msg = e.target.value;
+        e.target.value = "";
+        socket.emit("message", msg);
+    }
+};
+
+socket.on("message", ({ userId, name, msg }) => {
+    let div = document.createElement("div");
+    div.innerHTML = `<b>${name}:</b> ${msg}`;
+    messages.appendChild(div);
+});
+
+// Rời phòng
+document.getElementById("btnLeave").onclick = () => {
+    window.location.reload();
+};
