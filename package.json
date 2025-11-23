@@ -1,15 +1,12 @@
 {
   "name": "video-call",
   "version": "1.0.0",
-  "description": "Video Call nhóm + chia sẻ màn hình (WebRTC + WebSocket)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "ws": "^8.15.0"
-  },
-  "author": "YourName",
-  "license": "MIT"
+    "socket.io": "^4.7.2"
+  }
 }
