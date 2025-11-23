@@ -1,0 +1,12 @@
+.icon {
+    width: 24px;
+    height: 24px;
+    display: inline-block;
+    background-size: cover;
+}
+
+.mic { background-image: url('https://img.icons8.com/metro/452/microphone.png'); }
+.cam { background-image: url('https://img.icons8.com/ios-filled/50/video-call.png'); }
+.screenshare { background-image: url('https://img.icons8.com/ios-filled/50/screen-sharing.png'); }
+.chat { background-image: url('https://img.icons8.com/ios-glyphs/30/chat.png'); }
+.leave { background-image: url('https://img.icons8.com/ios-glyphs/30/exit.png'); }
