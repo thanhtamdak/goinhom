@@ -1,18 +1,19 @@
-const WebSocket = require('ws');
 const express = require('express');
 const path = require('path');
+const http = require('http');
+const WebSocket = require('ws');
 
 const app = express();
-const PORT_HTTP = process.env.PORT_HTTP || 8080;
-const PORT_WS = process.env.PORT_WS || 3000;
+const PORT = process.env.PORT || 8080;
 
-// Serve static client files
+// Serve static files
 app.use(express.static(path.join(__dirname, 'public')));
-app.listen(PORT_HTTP, '0.0.0.0', ()=> console.log(`Client served: http://localhost:${PORT_HTTP}`));
 
-// ----------------- WebSocket signaling -----------------
-const wss = new WebSocket.Server({ port: PORT_WS });
-console.log(`Signaling server running on ws://localhost:${PORT_WS}`);
+// Create HTTP server
+const server = http.createServer(app);
+
+// WebSocket server
+const wss = new WebSocket.Server({ server });
 
 const rooms = {};
 
@@ -46,6 +47,7 @@ wss.on('connection', ws => {
   });
 
   ws.on('close', ()=> handleLeave(ws));
+
   function handleLeave(ws){
     if(!ws.roomId || !rooms[ws.roomId]) return;
     rooms[ws.roomId].delete(ws);
@@ -54,3 +56,5 @@ wss.on('connection', ws => {
     });
   }
 });
+
+server.listen(PORT, ()=> console.log(`Server running on http://localhost:${PORT}`));
