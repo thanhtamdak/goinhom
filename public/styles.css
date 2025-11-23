@@ -1,0 +1,9 @@
+body { margin:0; font-family:sans-serif; background:#f0f0f0; }
+.container { padding:10px; max-width:1200px; margin:auto; }
+.connection { margin-bottom:10px; }
+.connection input { padding:5px; width:200px; }
+.connection button { padding:5px 10px; margin-left:5px; }
+.video-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:5px; }
+.video-grid video { width:100%; height:auto; background:black; }
+.controls { margin-top:10px; }
+.controls button { margin-right:5px; padding:5px 10px; }
