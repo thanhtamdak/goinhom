@@ -1,30 +1,61 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Video Call Nhóm</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Video Call — Professional</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-<div class="container">
-  <div class="connection">
-    <input type="text" id="roomInput" placeholder="Nhập Room ID">
-    <button id="joinBtn">Tham gia Phòng</button>
-    <div id="status"></div>
+  <div class="app">
+    <header>
+      <div class="brand">Video Call Pro</div>
+      <div class="room-setup">
+        <input id="nameInput" placeholder="Tên của bạn" />
+        <input id="roomInput" placeholder="Room ID (vd: math101)" />
+        <button id="joinBtn">Tham gia</button>
+        <button id="leaveBtn" disabled>Rời phòng</button>
+        <div id="status">Offline</div>
+      </div>
+    </header>
+
+    <main>
+      <aside class="sidebar">
+        <div class="section">
+          <h3>Người tham gia</h3>
+          <ul id="participants"></ul>
+        </div>
+
+        <div class="section">
+          <h3>Chat</h3>
+          <div id="chatBox" class="chat-box"></div>
+          <div class="chat-input">
+            <input id="chatInput" placeholder="Gõ tin nhắn..." />
+            <button id="sendChat">Gửi</button>
+          </div>
+        </div>
+      </aside>
+
+      <section class="stage">
+        <div id="presenterBanner" class="presenter-banner" hidden>
+          <strong id="presenterName"></strong> đang trình bày
+        </div>
+
+        <div id="largeVideo" class="large-video"></div>
+
+        <div id="videoGrid" class="video-grid"></div>
+
+        <div class="controls">
+          <button id="toggleAudio">Mic Off</button>
+          <button id="toggleVideo">Cam Off</button>
+          <button id="shareBtn">Chia sẻ màn hình</button>
+          <button id="stopShareBtn" disabled>Dừng trình bày</button>
+          <button id="presentBtn">Trình bày (Spotlight)</button>
+        </div>
+      </section>
+    </main>
   </div>
 
-  <div id="videoGrid" class="video-grid"></div>
-
-  <div class="controls">
-    <button id="toggleAudio">Mic On/Off</button>
-    <button id="toggleVideo">Camera On/Off</button>
-    <button id="shareScreen">Chia sẻ Màn hình</button>
-    <button id="stopScreen">Tắt chia sẻ</button>
-    <button id="leaveRoom">Rời khỏi Phòng</button>
-  </div>
-</div>
-
-<script src="app.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
