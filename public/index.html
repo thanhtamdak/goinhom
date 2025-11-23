@@ -1,34 +1,64 @@
-<!DOCTYPE html>
-<html>
+<!doctype html>
+<html lang="en">
 <head>
-    <title>Google Meet Mini</title>
-    <link rel="stylesheet" href="styles.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>Meet Mini — Video Call</title>
+
+  <!-- Material icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">Meet · Mini</div>
+      <div class="room-controls">
+        <input id="nameInput" placeholder="Tên của bạn" />
+        <input id="roomInput" placeholder="Room ID (vd: math101)" />
+        <button id="btnJoin" class="primary">Tham gia</button>
+        <button id="btnLeave" class="danger" disabled>Rời</button>
+      </div>
+    </header>
 
-<div id="top-bar">
-    <span id="room-name">Phòng họp</span>
-</div>
+    <main class="main">
+      <aside class="left">
+        <div class="participants-panel">
+          <h4>Người tham gia</h4>
+          <ul id="participantsList"></ul>
+        </div>
 
-<div id="video-grid"></div>
+        <div class="chat-panel">
+          <h4>Chat</h4>
+          <div id="chatBox" class="chat-box"></div>
+          <div class="chat-input">
+            <input id="chatInput" placeholder="Gõ tin nhắn..." />
+            <button id="sendChat"><span class="material-icons">send</span></button>
+          </div>
+        </div>
+      </aside>
 
-<div id="controls">
-    <button id="btnMic">🎤</button>
-    <button id="btnCam">📷</button>
-    <button id="btnShare">🖥️ Trình bày</button>
-    <button id="btnChat">💬 Chat</button>
-    <button id="btnLeave" class="leave">Rời phòng</button>
-</div>
+      <section class="stage">
+        <div id="presentBanner" class="present-banner hidden">Đang trình bày: <span id="presenterName"></span></div>
+        <div id="largeArea" class="large-area"></div>
+        <div id="thumbGrid" class="thumb-grid"></div>
 
-<div id="chat-box" class="hidden">
-    <div id="messages"></div>
-    <input id="chatInput" placeholder="Nhập tin nhắn…">
-</div>
+        <div class="control-bar">
+          <button id="btnMic" title="Bật/Tắt mic"><span class="material-icons" id="iconMic">mic</span></button>
+          <button id="btnCam" title="Bật/Tắt camera"><span class="material-icons" id="iconCam">videocam</span></button>
+          <button id="btnShare" title="Chia sẻ màn hình"><span class="material-icons">screen_share</span></button>
+          <button id="btnStopShare" title="Dừng chia sẻ" disabled><span class="material-icons">stop_screen_share</span></button>
+          <button id="btnPin" title="Ghim (Pin) người trình bày"><span class="material-icons">push_pin</span></button>
+        </div>
+      </section>
+    </main>
 
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
-<script src="app.js"></script>
+    <div id="toast" class="toast hidden"></div>
+  </div>
 
+  <!-- libs -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
