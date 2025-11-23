@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Video Call Nhóm</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="container">
+  <div class="connection">
+    <input type="text" id="roomInput" placeholder="Nhập Room ID">
+    <button id="joinBtn">Tham gia Phòng</button>
+    <div id="status"></div>
+  </div>
+  <div id="videoGrid" class="video-grid"></div>
+  <div class="controls">
+    <button id="toggleAudio">Mic On/Off</button>
+    <button id="toggleVideo">Camera On/Off</button>
+    <button id="shareScreen">Chia sẻ Màn hình</button>
+    <button id="stopScreen">Tắt chia sẻ</button>
+    <button id="leaveRoom">Rời khỏi Phòng</button>
+  </div>
+</div>
+<script src="app.js"></script>
+</body>
+</html>
