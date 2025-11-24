@@ -1,36 +1,34 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>Google Meet Clone</title>
-    <link rel="stylesheet" href="styles.css">
-    <link rel="stylesheet" href="icons.css">
+    <title>Meet App</title>
+    <style>
+        body { font-family: sans-serif; background: #f2f2f2; margin: 0; }
+        #videos { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; }
+        video { width: 250px; background: #000; border-radius: 10px; }
+        #presentation {
+            width: 100%; background: #111; text-align: center;
+            margin-top: 10px; padding: 10px;
+        }
+        #presentation video { width: 80%; border-radius: 10px; }
+    </style>
 </head>
+
 <body>
+    <h2 style="padding:10px">Meet Room</h2>
 
-<div id="top-bar">
-    <span id="room-title">Phòng họp nhóm</span>
-</div>
+    <!-- Video của tất cả người tham gia -->
+    <div id="videos"></div>
 
-<div id="notification"></div>
+    <!-- Khung trình chiếu -->
+    <div id="presentation" style="display:none">
+        <h3>Đang trình bày</h3>
+        <video id="presentationVideo" autoplay playsinline></video>
+    </div>
 
-<div id="video-grid"></div>
+    <button onclick="startShare()">Trình bày</button>
+    <button onclick="stopShare()">Dừng trình bày</button>
 
-<div id="toolbar">
-    <button id="btnMic" class="tool-btn"><span class="icon mic"></span></button>
-    <button id="btnCam" class="tool-btn"><span class="icon cam"></span></button>
-    <button id="btnShare" class="tool-btn"><span class="icon screenshare"></span></button>
-    <button id="btnChat" class="tool-btn"><span class="icon chat"></span></button>
-    <button id="btnLeave" class="tool-btn leave"><span class="icon leave"></span></button>
-</div>
-
-<div id="chat-box" class="hidden">
-    <div id="chat-messages"></div>
-    <input type="text" id="chatInput" placeholder="Nhập tin nhắn…">
-</div>
-
-<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
-<script src="app.js"></script>
-
+    <script src="client.js"></script>
 </body>
 </html>
