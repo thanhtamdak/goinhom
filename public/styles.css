@@ -37,3 +37,24 @@ body{margin:0;font-family:Inter,system-ui,Segoe UI,Roboto,Arial;background:linea
   .sidebar{width:100%}
   .large-video{height:220px}
 }
+/* ======== ICON BUTTONS ======== */
+.controls button {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 10px 14px;
+  font-size: 16px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  background: #333;
+  color: white;
+}
+
+.controls button.off {
+  background: #a00; /* đỏ khi OFF */
+}
+
+.controls button i {
+  font-size: 18px;
+}
