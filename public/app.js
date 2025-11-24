@@ -371,3 +371,45 @@ async function stopShare(){
 socket.on('connect', ()=> {
   myId = socket.id;
 });
+///////////////////////////////
+// ===== TOGGLE MIC / CAM ====
+///////////////////////////////
+const toggleAudioBtn = document.getElementById("toggleAudio");
+const toggleVideoBtn = document.getElementById("toggleVideo");
+const micIcon = document.getElementById("micIcon");
+const camIcon = document.getElementById("camIcon");
+
+let audioEnabled = true;
+let videoEnabled = true;
+
+// MIC
+toggleAudioBtn.onclick = () => {
+  audioEnabled = !audioEnabled;
+  localStream.getAudioTracks()[0].enabled = audioEnabled;
+
+  if(audioEnabled){
+    toggleAudioBtn.classList.remove("off");
+    micIcon.classList.remove("fa-microphone-slash");
+    micIcon.classList.add("fa-microphone");
+  } else {
+    toggleAudioBtn.classList.add("off");
+    micIcon.classList.remove("fa-microphone");
+    micIcon.classList.add("fa-microphone-slash");
+  }
+}
+
+// CAM
+toggleVideoBtn.onclick = () => {
+  videoEnabled = !videoEnabled;
+  localStream.getVideoTracks()[0].enabled = videoEnabled;
+
+  if(videoEnabled){
+    toggleVideoBtn.classList.remove("off");
+    camIcon.classList.remove("fa-video-slash");
+    camIcon.classList.add("fa-video");
+  } else {
+    toggleVideoBtn.classList.add("off");
+    camIcon.classList.remove("fa-video");
+    camIcon.classList.add("fa-video-slash");
+  }
+}
