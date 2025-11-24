@@ -4,31 +4,22 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Video Call — Group</title>
-
 <link rel="stylesheet" href="styles.css">
-
-<!-- Font Awesome -->
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 </head>
 <body>
   <div class="container">
-
     <header class="header">
       <div class="brand">Video Call</div>
-
       <div class="join-panel">
         <input id="nameInput" placeholder="Tên của bạn" />
         <input id="roomInput" placeholder="Room ID (ví dụ: math101)" />
         <button id="joinBtn">Tham gia</button>
         <button id="leaveBtn" disabled>Rời phòng</button>
-
         <div id="status" class="status">Offline</div>
       </div>
     </header>
 
     <main class="main">
-
       <aside class="sidebar">
         <h3>Người tham gia</h3>
         <ul id="participants" class="participants"></ul>
@@ -36,7 +27,6 @@
         <div class="chat">
           <h4>Chat</h4>
           <div id="chatBox" class="chat-box"></div>
-
           <div class="chat-input">
             <input id="chatInput" placeholder="Gõ tin nhắn..." />
             <button id="sendChat">Gửi</button>
@@ -45,44 +35,17 @@
       </aside>
 
       <section class="stage">
-
-        <div id="presentBanner" class="present-banner hidden">
-          Đang trình bày: <span id="presenterName"></span>
-        </div>
-
-        <!-- Video chính khi trình bày -->
+        <div id="presentBanner" class="present-banner hidden">Đang trình bày: <span id="presenterName"></span></div>
         <div id="largeVideo" class="large-video"></div>
-
-        <!-- Video gallery -->
         <div id="videoGrid" class="video-grid"></div>
 
-        <!-- Controls -->
         <div class="controls">
-
-          <!-- MIC BUTTON -->
-          <button id="toggleAudio" class="ctrl-btn">
-            <i id="micIcon" class="fas fa-microphone"></i>
-          </button>
-
-          <!-- CAM BUTTON -->
-          <button id="toggleVideo" class="ctrl-btn">
-            <i id="camIcon" class="fas fa-video"></i>
-          </button>
-
-          <!-- SHARE SCREEN -->
-          <button id="shareBtn" class="ctrl-btn">
-            <i class="fas fa-display"></i>
-          </button>
-
-          <!-- STOP SHARE -->
-          <button id="stopShareBtn" class="ctrl-btn" disabled>
-            <i class="fas fa-stop"></i>
-          </button>
-
+          <button id="toggleAudio">Mic On/Off</button>
+          <button id="toggleVideo">Camera On/Off</button>
+          <button id="shareBtn">Chia sẻ Màn hình</button>
+          <button id="stopShareBtn" disabled>Tắt chia sẻ</button>
         </div>
-
       </section>
-
     </main>
   </div>
 
