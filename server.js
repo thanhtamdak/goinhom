@@ -1,84 +1,88 @@
-import { WebSocketServer } from "ws";
+// server.js
+const express = require('express');
+const http = require('http');
+const { Server } = require('socket.io');
+const path = require('path');
 
-const wss = new WebSocketServer({ port: 10000 });
+const app = express();
+const server = http.createServer(app);
 
-let rooms = {}; // roomId → { users: Set, presenterId }
-
-wss.on("connection", (ws) => {
-    ws.on("message", (msg) => {
-        const data = JSON.parse(msg);
-
-        switch (data.type) {
-
-            case "join":
-                ws.userId = data.userId;
-                ws.roomId = data.roomId;
-
-                if (!rooms[data.roomId]) {
-                    rooms[data.roomId] = { users: new Set(), presenterId: null };
-                }
-
-                rooms[data.roomId].users.add(ws);
-
-                // gửi danh sách user hiện tại
-                rooms[data.roomId].users.forEach(u => {
-                    if (u !== ws) {
-                        u.send(JSON.stringify({
-                            type: "new-user",
-                            userId: ws.userId
-                        }));
-                    }
-                });
-
-                // trả lại danh sách user cho người mới
-                ws.send(JSON.stringify({
-                    type: "users-list",
-                    users: [...rooms[data.roomId].users].map(x => x.userId),
-                    presenter: rooms[data.roomId].presenterId
-                }));
-                break;
-
-            case "offer":
-            case "answer":
-            case "candidate":
-                broadcastToUser(ws.roomId, data.to, data);
-                break;
-
-            case "start-present":
-                rooms[data.roomId].presenterId = data.userId;
-                broadcast(ws.roomId, { type: "presenter-start", userId: data.userId });
-                break;
-
-            case "stop-present":
-                rooms[data.roomId].presenterId = null;
-                broadcast(ws.roomId, { type: "presenter-stop" });
-                break;
-        }
-    });
-
-    ws.on("close", () => {
-        let room = rooms[ws.roomId];
-        if (!room) return;
-
-        room.users.delete(ws);
-
-        broadcast(ws.roomId, { type: "user-left", userId: ws.userId });
-
-        if (room.users.size === 0) delete rooms[ws.roomId];
-    });
+// Socket.IO server (same HTTP server) -> works on Render/Railway (HTTPS/WSS)
+const io = new Server(server, {
+  cors: { origin: '*' }
 });
 
-function broadcast(roomId, data) {
-    if (!rooms[roomId]) return;
-    rooms[roomId].users.forEach(u => u.send(JSON.stringify(data)));
-}
+app.use(express.static(path.join(__dirname, 'public')));
 
-function broadcastToUser(roomId, userId, data) {
-    rooms[roomId].users.forEach(u => {
-        if (u.userId === userId) {
-            u.send(JSON.stringify(data));
-        }
-    });
-}
+// rooms: Map roomId => Map(socketId => { name })
+const rooms = new Map();
 
-console.log("Signaling server running on port 10000");
+io.on('connection', (socket) => {
+  // console.log('connect', socket.id);
+
+  socket.on('join', ({ roomId, name }) => {
+    socket.join(roomId);
+    socket.data.name = name || 'Guest';
+    socket.data.roomId = roomId;
+
+    if (!rooms.has(roomId)) rooms.set(roomId, new Map());
+    const roomMap = rooms.get(roomId);
+
+    // Send existing peers to the newcomer
+    const peers = Array.from(roomMap.entries()).map(([id, meta]) => ({ id, name: meta.name }));
+    socket.emit('all-users', peers);
+
+    // Notify others about new user
+    socket.to(roomId).emit('user-joined', { id: socket.id, name: socket.data.name });
+
+    // Add to room map
+    roomMap.set(socket.id, { name: socket.data.name });
+
+    // Optional: if there is an active presenter flagged, the server could track it (not required)
+    // Not storing presenter to keep server simple — presenters announced by events.
+  });
+
+  // Forward signaling messages (offer/answer/ice) from client to specific target
+  socket.on('signal', (data) => {
+    // data: { to, from, signal }
+    if (!data || !data.to) return;
+    io.to(data.to).emit('signal', data);
+  });
+
+  // Presentation events
+  socket.on('start-present', () => {
+    const roomId = socket.data.roomId;
+    if (roomId) socket.to(roomId).emit('start-present', { id: socket.id, name: socket.data.name });
+  });
+
+  socket.on('stop-present', () => {
+    const roomId = socket.data.roomId;
+    if (roomId) socket.to(roomId).emit('stop-present', { id: socket.id });
+  });
+
+  // Media status updates (mic/cam)
+  socket.on('media-update', (payload) => {
+    const roomId = socket.data.roomId;
+    if (roomId) socket.to(roomId).emit('media-update', { id: socket.id, ...payload });
+  });
+
+  // Chat
+  socket.on('chat', (payload) => {
+    const roomId = socket.data.roomId;
+    if (roomId) io.to(roomId).emit('chat', { id: socket.id, name: socket.data.name, text: payload.text });
+  });
+
+  socket.on('disconnect', () => {
+    const roomId = socket.data.roomId;
+    const name = socket.data.name;
+    if (roomId && rooms.has(roomId)) {
+      rooms.get(roomId).delete(socket.id);
+      socket.to(roomId).emit('user-left', { id: socket.id, name });
+      // Clean up empty room
+      if (rooms.get(roomId).size === 0) rooms.delete(roomId);
+    }
+  });
+});
+
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server running on http://localhost:${PORT}`));
