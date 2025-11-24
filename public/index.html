@@ -1,34 +1,57 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>Meet App</title>
-    <style>
-        body { font-family: sans-serif; background: #f2f2f2; margin: 0; }
-        #videos { display: flex; flex-wrap: wrap; gap: 10px; padding: 10px; }
-        video { width: 250px; background: #000; border-radius: 10px; }
-        #presentation {
-            width: 100%; background: #111; text-align: center;
-            margin-top: 10px; padding: 10px;
-        }
-        #presentation video { width: 80%; border-radius: 10px; }
-    </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Video Call — Group</title>
+<link rel="stylesheet" href="styles.css">
 </head>
-
 <body>
-    <h2 style="padding:10px">Meet Room</h2>
+  <div class="container">
+    <header class="header">
+      <div class="brand">Video Call</div>
+      <div class="join-panel">
+        <input id="nameInput" placeholder="Tên của bạn" />
+        <input id="roomInput" placeholder="Room ID (ví dụ: math101)" />
+        <button id="joinBtn">Tham gia</button>
+        <button id="leaveBtn" disabled>Rời phòng</button>
+        <div id="status" class="status">Offline</div>
+      </div>
+    </header>
 
-    <!-- Video của tất cả người tham gia -->
-    <div id="videos"></div>
+    <main class="main">
+      <aside class="sidebar">
+        <h3>Người tham gia</h3>
+        <ul id="participants" class="participants"></ul>
 
-    <!-- Khung trình chiếu -->
-    <div id="presentation" style="display:none">
-        <h3>Đang trình bày</h3>
-        <video id="presentationVideo" autoplay playsinline></video>
-    </div>
+        <div class="chat">
+          <h4>Chat</h4>
+          <div id="chatBox" class="chat-box"></div>
+          <div class="chat-input">
+            <input id="chatInput" placeholder="Gõ tin nhắn..." />
+            <button id="sendChat">Gửi</button>
+          </div>
+        </div>
+      </aside>
 
-    <button onclick="startShare()">Trình bày</button>
-    <button onclick="stopShare()">Dừng trình bày</button>
+      <section class="stage">
+        <div id="presentBanner" class="present-banner hidden">Đang trình bày: <span id="presenterName"></span></div>
+        <div id="largeVideo" class="large-video"></div>
+        <div id="videoGrid" class="video-grid"></div>
 
-    <script src="client.js"></script>
+        <div class="controls">
+          <button id="toggleAudio">Mic On/Off</button>
+          <button id="toggleVideo">Camera On/Off</button>
+          <button id="shareBtn">Chia sẻ Màn hình</button>
+          <button id="stopShareBtn" disabled>Tắt chia sẻ</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- libs -->
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/simple-peer@9/simplepeer.min.js"></script>
+  <script src="app.js"></script>
 </body>
 </html>
