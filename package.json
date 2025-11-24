@@ -1,6 +1,7 @@
 {
   "name": "video-call",
   "version": "1.0.0",
+  "description": "Group video call with presentation (WebRTC + Socket.IO + Simple-Peer)",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
