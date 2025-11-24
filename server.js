@@ -8,11 +8,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
-// serve client
+// serve static files
 app.use(express.static(path.join(__dirname, 'public')));
 
-const PORT = process.env.PORT || 8080;
-const rooms = new Map(); // roomId -> Map(socket.id -> {name})
+// rooms: roomId -> Map(socketId -> { name })
+const rooms = new Map();
 
 io.on('connection', (socket) => {
   console.log('socket connected', socket.id);
@@ -23,58 +23,59 @@ io.on('connection', (socket) => {
     socket.data.roomId = roomId;
 
     if (!rooms.has(roomId)) rooms.set(roomId, new Map());
-    rooms.get(roomId).set(socket.id, { name: socket.data.name });
-
-    // send existing users to the new one
-    const peers = Array.from(rooms.get(roomId).entries())
-      .filter(([id]) => id !== socket.id)
-      .map(([id, meta]) => ({ id, name: meta.name }));
+    const roomMap = rooms.get(roomId);
+    // send existing peers to newcomer
+    const peers = Array.from(roomMap.entries()).map(([id, meta]) => ({ id, name: meta.name }));
     socket.emit('all-users', peers);
 
     // notify others
     socket.to(roomId).emit('user-joined', { id: socket.id, name: socket.data.name });
+
+    // add to room map
+    roomMap.set(socket.id, { name: socket.data.name });
+
     console.log(`${socket.data.name} joined ${roomId}`);
   });
 
-  // forwarding signaling messages: offer/answer/ice
+  // generic signal forward (offer/answer/ice) used by simple-peer
   socket.on('signal', (data) => {
     // data: { to, from, signal }
     io.to(data.to).emit('signal', data);
   });
 
-  // mic/cam toggle
-  socket.on('update-media', (data) => {
-    // data: { userId, audio, video }
-    const roomId = socket.data.roomId;
-    if (roomId) socket.to(roomId).emit('update-media', data);
-  });
-
   socket.on('start-share', () => {
-    const roomId = socket.data.roomId;
-    if (roomId) socket.to(roomId).emit('start-share', { userId: socket.id });
+    const r = socket.data.roomId;
+    if (r) socket.to(r).emit('start-share', { id: socket.id });
   });
 
   socket.on('stop-share', () => {
-    const roomId = socket.data.roomId;
-    if (roomId) socket.to(roomId).emit('stop-share', { userId: socket.id });
+    const r = socket.data.roomId;
+    if (r) socket.to(r).emit('stop-share', { id: socket.id });
   });
 
-  socket.on('chat', (data) => {
-    const roomId = socket.data.roomId;
-    if (roomId) io.to(roomId).emit('chat', { from: socket.id, name: socket.data.name, text: data.text });
+  socket.on('media-update', (payload) => {
+    // { audio, video }
+    const r = socket.data.roomId;
+    if (r) socket.to(r).emit('media-update', { id: socket.id, audio: payload.audio, video: payload.video });
+  });
+
+  socket.on('chat', (payload) => {
+    const r = socket.data.roomId;
+    if (r) {
+      io.to(r).emit('chat', { id: socket.id, name: socket.data.name, text: payload.text });
+    }
   });
 
   socket.on('disconnect', () => {
-    const roomId = socket.data.roomId;
+    const r = socket.data.roomId;
     const name = socket.data.name;
-    if (roomId && rooms.has(roomId)) {
-      rooms.get(roomId).delete(socket.id);
-      socket.to(roomId).emit('user-left', { id: socket.id, name });
-      console.log(`${name} left ${roomId}`);
+    if (r && rooms.has(r)) {
+      rooms.get(r).delete(socket.id);
+      socket.to(r).emit('user-left', { id: socket.id, name });
+      console.log(`${name} left ${r}`);
     }
   });
 });
 
-server.listen(PORT, () => {
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+const PORT = process.env.PORT || 3000;
+server.listen(PORT, () => console.log(`Server listening on http://localhost:${PORT}`));
